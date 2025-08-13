@@ -1,7 +1,7 @@
 const playBoard = document.querySelector(".play-board");
 const scoreElement = document.querySelector(".score");
 const highScoreElement = document.querySelector(".high-score");
-
+const controls = document.querySelectorAll(".controls i ");
 
 let foodX, foodY;
 let snakeX, snakeY, velocityX, velocityY, snakeBody, gameLoop;
@@ -54,6 +54,12 @@ function changeDirection(e) {
     }
 }
 
+controls.forEach(key => {
+//remove to log key    key.addEventListener("click", () => console.log(key));
+    // call changeDriection on each key click and passing key dataset value as object
+    key.addEventListener("click", () => changeDirection({ key: key.dataset.key}));
+})
+
 function initGame() {
     let htmlMarkup = `<div class="food" style="grid-area: ${foodY} / ${foodX}"></div>`;
 
@@ -79,7 +85,7 @@ function initGame() {
 
         scoreElement.innerText = `Score: ${score}`;  // use backticks for template literal
 
-        highScoreElement.innerText = `High Score: ${highScore}`;
+        highScoreElement.innerText = `High Score: ${highScore}`; // store high score
 
 
     } else {

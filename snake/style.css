@@ -41,6 +41,21 @@ body {
     position: relative;
 }
 
+.controls {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.controls i {
+    padding: 25px 25px;
+    color: black;
+    text-align: center;
+    cursor: pointer;
+    font-size: 1.3rem;
+    width: calc(100 / 4);
+    border-right: 10px solid black;
+}
+
 .food {
     background-color: rgba(115, 11, 11, 0.668);
     border-radius: 50%;

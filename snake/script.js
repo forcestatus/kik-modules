@@ -60,6 +60,22 @@ controls.forEach(key => {
     key.addEventListener("click", () => changeDirection({ key: key.dataset.key}));
 })
 
+// Function to get a random color
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+// Call this when fruit is eaten
+function changeBodyBackground() {
+  document.body.style.backgroundColor = getRandomColor();
+}
+
+
 function initGame() {
     let htmlMarkup = `<div class="food" style="grid-area: ${foodY} / ${foodX}"></div>`;
 
@@ -75,8 +91,10 @@ function initGame() {
     // Add head to body
     snakeBody.unshift([snakeX, snakeY]);
 
+    
     // Check if snake hits food
     if (snakeX === foodX && snakeY === foodY) {
+        changeBodyBackground();
         changeFoodPosition();
         score++; //increment score by 1
         

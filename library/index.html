@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Bookstore Inventory</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px; }
+        #bookList { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Bookstore Inventory System</h1>
+
+    <!-- CSV File Upload -->
+    <div>
+        <input type="file" id="csvFile" accept=".csv">
+        <button onclick="loadCSV()">Load Books from CSV</button>
+    </div>
+
+    <!-- Manual Entry -->
+    <div>
+        <input type="text" id="bookId" placeholder="Book ID">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="author" placeholder="Author">
+        <input type="text" id="genre" placeholder="Genre">
+        <select id="availability">
+            <option value="In Stock">In Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <button onclick="addBook()">Add Book</button>
+    </div>
+
+    <div id="bookList">
+        <h2>Books:</h2>
+        <ul id="booksUl"></ul>
+    </div>
+
+    <script src="inventory.js"></script>
+</body>
+</html>

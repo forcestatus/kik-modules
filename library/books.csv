@@ -1,0 +1,51 @@
+ID,Title,Author,Genre,Availability
+B001,The Great Gatsby,F. Scott Fitzgerald,Fiction,In Stock
+B002,To Kill a Mockingbird,Harper Lee,Fiction,In Stock
+B003,1984,George Orwell,Dystopian,In Stock
+B004,The Catcher in the Rye,J.D. Salinger,Fiction,Out of Stock
+B005,The Hobbit,J.R.R. Tolkien,Fantasy,In Stock
+B006,Pride and Prejudice,Jane Austen,Romance,In Stock
+B007,The Lord of the Rings,J.R.R. Tolkien,Fantasy,In Stock
+B008,Harry Potter and the Sorcerer's Stone,J.K. Rowling,Fantasy,Out of Stock
+B009,The Chronicles of Narnia,C.S. Lewis,Fantasy,In Stock
+B010,Animal Farm,George Orwell,Satire,In Stock
+B011,Brave New World,Aldous Huxley,Dystopian,In Stock
+B012,Jane Eyre,Charlotte Bronte,Romance,In Stock
+B013,Wuthering Heights,Emily Bronte,Romance,Out of Stock
+B014,The Odyssey,Homer,Classic,In Stock
+B015,The Iliad,Homer,Classic,In Stock
+B016,Moby Dick,Herman Melville,Classic,In Stock
+B017,War and Peace,Leo Tolstoy,Historical,Out of Stock
+B018,Crime and Punishment,Fyodor Dostoevsky,Crime,In Stock
+B019,The Brothers Karamazov,Fyodor Dostoevsky,Crime,In Stock
+B020,Les Miserables,Victor Hugo,Historical,In Stock
+B021,The Divine Comedy,Dante Alighieri,Classic,In Stock
+B022,Don Quixote,Miguel de Cervantes,Classic,In Stock
+B023,Frankenstein,Mary Shelley,Horror,Out of Stock
+B024,Dracula,Bram Stoker,Horror,In Stock
+B025,The Picture of Dorian Gray,Oscar Wilde,Fiction,In Stock
+B026,The Kite Runner,Khaled Hosseini,Fiction,In Stock
+B027,A Thousand Splendid Suns,Khaled Hosseini,Fiction,Out of Stock
+B028,Life of Pi,Yann Martel,Fiction,In Stock
+B029,The Alchemist,Paulo Coelho,Fiction,In Stock
+B030,The Da Vinci Code,Dan Brown,Thriller,In Stock
+B031,Angels & Demons,Dan Brown,Thriller,Out of Stock
+B032,Inferno,Dan Brown,Thriller,In Stock
+B033,Digital Fortress,Dan Brown,Thriller,In Stock
+B034,Deception Point,Dan Brown,Thriller,In Stock
+B035,The Girl with the Dragon Tattoo,Stieg Larsson,Crime,In Stock
+B036,The Girl Who Played with Fire,Stieg Larsson,Crime,In Stock
+B037,The Girl Who Kicked the Hornets' Nest,Stieg Larsson,Crime,In Stock
+B038,The Hunger Games,Suzanne Collins,Dystopian,In Stock
+B039,Catching Fire,Suzanne Collins,Dystopian,In Stock
+B040,Mockingjay,Suzanne Collins,Dystopian,Out of Stock
+B041,Divergent,Veronica Roth,Dystopian,In Stock
+B042,Insurgent,Veronica Roth,Dystopian,In Stock
+B043,Allegiant,Veronica Roth,Dystopian,In Stock
+B044,The Fault in Our Stars,John Green,Romance,In Stock
+B045,Looking for Alaska,John Green,Romance,Out of Stock
+B046,Paper Towns,John Green,Romance,In Stock
+B047,The Shining,Stephen King,Horror,In Stock
+B048,It,Stephen King,Horror,Out of Stock
+B049,Misery,Stephen King,Horror,In Stock
+B050,Pet Sematary,Stephen King,Horror,In Stock

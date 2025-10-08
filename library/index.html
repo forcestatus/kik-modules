@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Online Bookstore Inventory</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        input, button { margin: 5px; }
-        #bookList { margin-top: 20px; }
+        input, select, button { margin: 5px; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { cursor: pointer; background-color: #f4f4f4; }
+        #booksUl { list-style-type: none; padding-left: 0; }
     </style>
 </head>
 <body>
@@ -13,12 +18,22 @@
 
     <!-- CSV File Upload -->
     <div>
+        <h3>Load Books from CSV</h3>
         <input type="file" id="csvFile" accept=".csv">
-        <button onclick="loadCSV()">Load Books from CSV</button>
+        <button onclick="loadCSV()">Load CSV</button>
     </div>
 
-    <!-- Manual Entry -->
+    <!-- Instant Lookup by ID -->
     <div>
+        <h3>Search by Book ID</h3>
+        <input type="text" id="searchId" placeholder="Enter Book ID">
+        <button onclick="searchBookById()">Search</button>
+        <p id="searchResult"></p>
+    </div>
+
+    <!-- Manual Book Entry -->
+    <div>
+        <h3>Add a Book Manually</h3>
         <input type="text" id="bookId" placeholder="Book ID">
         <input type="text" id="title" placeholder="Title">
         <input type="text" id="author" placeholder="Author">
@@ -30,8 +45,34 @@
         <button onclick="addBook()">Add Book</button>
     </div>
 
+    <!-- Filter by Genre -->
+    <div>
+        <h3>Filter by Genre</h3>
+        <select id="genreFilter" onchange="filterByGenre()">
+            <option value="">All Genres</option>
+        </select>
+    </div>
+
+    <!-- Books Table -->
+    <div>
+        <h3>Books</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortBooks('id')">ID</th>
+                    <th onclick="sortBooks('title')">Title</th>
+                    <th onclick="sortBooks('author')">Author</th>
+                    <th onclick="sortBooks('genre')">Genre</th>
+                    <th onclick="sortBooks('availability')">Availability</th>
+                </tr>
+            </thead>
+            <tbody id="booksTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Optional List Display -->
     <div id="bookList">
-        <h2>Books:</h2>
+        <h2>Books List (Optional)</h2>
         <ul id="booksUl"></ul>
     </div>
 

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bookstore Inventory Test Case Tracker</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #333; color: #fff; }
+    input, select, button { padding: 5px; margin: 3px; }
+    .pass { background-color: #c6efce; }
+    .fail { background-color: #ffc7ce; }
+</style>
+</head>
+<body>
+
+<h1>Bookstore Inventory – Test Case Tracker</h1>
+
+<table id="testCaseTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Test Case Description</th>
+            <th>Expected Result</th>
+            <th>Actual Result</th>
+            <th>Pass/Fail</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Add a new book manually</td>
+            <td>Book is added to inventory and visible in table</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Edit book details inline</td>
+            <td>Book updates are saved and visible in table</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Remove a book</td>
+            <td>Book is removed from inventory and table</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Sort books by ID, Title, Author, Genre, Availability</td>
+            <td>Books sorted correctly ascending/descending</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Filter books by ID, Title, Author, Genre</td>
+            <td>Table shows only filtered books</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Load books from CSV file</td>
+            <td>Books imported correctly and visible in table</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Save inventory to CSV file</td>
+            <td>CSV file is downloaded with correct data</td>
+            <td><input type="text" placeholder="Enter actual result"></td>
+            <td>
+                <select>
+                    <option value="">--Select--</option>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+            <td><input type="text" placeholder="Notes/comments"></td>
+        </tr>
+    </tbody>
+</table>
+
+<button onclick="downloadTestResults()">Download Test Results CSV</button>
+
+<script>
+// Function to download the filled test cases as CSV
+function downloadTestResults() {
+    const table = document.getElementById('testCaseTable');
+    const rows = Array.from(table.querySelectorAll('tr'));
+    let csvContent = '';
+
+    rows.forEach((row, index) => {
+        const cols = Array.from(row.querySelectorAll('th, td'));
+        const rowData = cols.map(col => {
+            if (col.querySelector('input')) return col.querySelector('input').value.replace(/,/g,''); // remove commas
+            if (col.querySelector('select')) return col.querySelector('select').value;
+            return col.textContent.replace(/,/g,''); // remove commas
+        });
+        csvContent += rowData.join(',') + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bookstore_test_cases.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert("CSV downloaded!");
+}
+</script>
+
+</body>
+</html>

@@ -12,6 +12,7 @@
 // - Maintains order via doubly linked list
 // - Supports fast lookup using Maps
 // - Inline editable table cells
+// - Integrate hash map system
 
 // ================================
 // ----- Book Class -----
@@ -91,10 +92,44 @@ class BookList {
 // bookMap: fast lookup by ID
 // bookMapByTitle / bookMapByAuthor: fast lookup for search
 // ================================
+
+// ----- Initialize Data Structures -----
+// The linked list keeps book order (for easy iteration and removal)
+// Hash maps (using JS Map) allow instant lookups by ID, Title, and Author
 const bookList = new BookList();
-const bookMap = new Map();
-const bookMapByTitle = new Map();
-const bookMapByAuthor = new Map();
+
+// Hash Maps for quick access
+const bookMap = new Map();          // Lookup by Book ID
+const bookMapByTitle = new Map();   // Lookup by Book Title
+const bookMapByAuthor = new Map();  // Lookup by Author Name
+
+// ----- Hash Map Utility Functions -----
+// These keep all hash maps updated whenever books are added or changed
+
+// Adds book to the title and author maps
+function addToSecondaryMaps(book) {
+    // For Title
+    if (!bookMapByTitle.has(book.title)) bookMapByTitle.set(book.title, []);
+    bookMapByTitle.get(book.title).push(book);
+
+    // For Author
+    if (!bookMapByAuthor.has(book.author)) bookMapByAuthor.set(book.author, []);
+    bookMapByAuthor.get(book.author).push(book);
+}
+
+// Rebuilds all secondary maps (used after edits/removals)
+function rebuildSecondaryMaps() {
+    bookMapByTitle.clear();
+    bookMapByAuthor.clear();
+    bookList.listBooks().forEach(book => addToSecondaryMaps(book));
+}
+
+// Explanation:
+// - bookMap.get("123") → retrieves a book instantly by ID
+// - bookMapByTitle.get("Dune") → returns an array of all books titled "Dune"
+// - bookMapByAuthor.get("Frank Herbert") → returns an array of all books by that author
+// - Every time you add, edit, or remove a book, these maps stay in sync.
+// - That means you can instantly search later using bookMap.get(id) or bookMapByTitle.get(title).
 
 // ================================
 // ----- Current Sort Tracker -----
@@ -126,10 +161,12 @@ function addBook() {
         return;
     }
 
+    //This ensures every time you add a book, all three maps are updated automatically.
     const book = new Book(id, title, author, genre, availability);
-    bookList.add(book);      
-    bookMap.set(id, book);   
-    addToSecondaryMaps(book); 
+    bookList.add(book);              // Add to linked list
+    bookMap.set(id, book);           // Add to hash map for ID
+    addToSecondaryMaps(book);        // Add to title/author maps
+
 
     updateGenreFilter();     
     displayBooks();          
@@ -204,14 +241,13 @@ function removeBook(id) {
     if (!confirmed) return;
 
     const removed = bookList.removeById(id); 
+    // Hook maps into removeBook() This ensures everything stays consistent when deleting.
     if (removed) {
-        bookMap.delete(id); 
-        rebuildSecondaryMaps(); 
-        displayBooks();     
-        updateGenreFilter(); 
+        bookMap.delete(id);        // Remove from ID map
+        rebuildSecondaryMaps();    // Rebuild title/author maps
+        displayBooks();            // Refresh UI
+        updateGenreFilter();       // Update genre dropdown
         alert(`Book ID ${id} removed successfully.`);
-    } else {
-        alert("Book not found!");
     }
 }
 
@@ -325,19 +361,62 @@ function loadCSV() {
     reader.readAsText(file); 
 }
 
+// ============================
+// Function: parseCSV()
+// ----------------------------
+// Reads the CSV text, skips the header,
+// creates Book objects, and adds them
+// to both bookList and bookMap.
+// ============================
 function parseCSV(csvText) {
-    const lines = csvText.split("\n");
-    for (let i = 1; i < lines.length; i++) { 
+    const lines = csvText.split("\n"); // Split file into lines
+
+    // const book = new Book(id, title, author, genre, availability);
+
+    // ✅ Start reading from the 2nd line (skip header)
+    for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (!line) continue; 
-        const [id, title, author = "", genre = "", availability = ""] = line.split(",").map(c => c.trim());
+        if (!line) continue; // Skip blank lines
+
+        // ✅ Extract data fields safely
+        const [id, title, author = "", genre = "", availability = ""] =
+            line.split(",").map(c => c.trim());
+
+        // ✅ Skip invalid or duplicate IDs
         if (!id || !title || bookMap.has(id)) continue;
+
+        // ✅ Create the Book now that we have data
         const book = new Book(id, title, author, genre, availability);
-        bookList.add(book);
-        bookMap.set(id, book);
+
+        // ✅ Add to your main structures
+        bookList.add(book);      // If bookList is a custom collection class
+        bookMap.set(id, book);   // Quick ID lookup
+
+        // ✅ Update any secondary lookup maps if you use them
         addToSecondaryMaps(book);
     }
 }
+
+
+// ----- Quick Search Examples -----
+// These will become interactive buttons in a later stage
+
+function searchBookById() {
+    const searchId = document.getElementById("searchId").value.trim();
+    const book = bookMap.get(searchId);
+    const result = document.getElementById("searchResult");
+
+    result.textContent = book
+        ? `Found: ${book.title} by ${book.author} (${book.genre})`
+        : "Book not found.";
+}
+
+function searchBookByTitle() {
+    const title = prompt("Enter title:");
+    const books = bookMapByTitle.get(title) || [];
+    alert(books.length ? `Found ${books.length} match(es).` : "No matches.");
+}
+
 
 // ================================
 // ----- Clear Form Inputs -----

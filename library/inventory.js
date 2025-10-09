@@ -14,6 +14,7 @@
 // - Inline editable table cells
 // - Integrate hash map system
 // - Implement a Custom Sorting Algorithm
+// - Save Books to LocalStorage, add automatic saving on edits/removals 
 
 // ================================
 // ----- Book Class -----
@@ -146,7 +147,40 @@ function addBook() {
 
     updateGenreFilter();       // Update dropdown
     displayBooks();            // Refresh table
+    saveToLocalStorage();      // Persist changes. Save changes automatically whenever you add, edit, or remove a book.
     clearInputs();             // Clear input fields
+}
+
+// ================================
+// ----- Save to LocalStorage -----
+// Saves current book list so it persists across page reloads
+// ================================
+function saveToLocalStorage() {
+    const books = bookList.listBooks();           // Convert linked list to array
+    localStorage.setItem('booksInventory', JSON.stringify(books)); // Store as JSON
+
+}
+
+// ================================
+// ----- Load from LocalStorage -----
+// Loads saved books when page loads
+// ================================
+function loadFromLocalStorage() {
+    const storedBooks = localStorage.getItem('booksInventory');
+    if (!storedBooks) return; // Nothing saved yet
+
+    const booksArray = JSON.parse(storedBooks); // Convert JSON string back to array
+
+    booksArray.forEach(b => {
+        // Recreate Book objects and add to list and maps
+        const book = new Book(b.id, b.title, b.author, b.genre, b.availability);
+        bookList.add(book);          // Add to linked list
+        bookMap.set(book.id, book);  // Add to ID map
+        addToSecondaryMaps(book);    // Add to Title/Author maps
+    });
+
+    updateGenreFilter();       // Refresh genre dropdown
+    displayBooks(bookList.listBooks()); // Show books in table
 }
 
 // ================================
@@ -169,7 +203,9 @@ function displayBooks(books = bookList.listBooks()) {
             <td><button onclick="removeBook('${book.id}')">Remove</button></td>
         `;
         tbody.appendChild(tr);
+    
     });
+
 
     updateSortArrows(); // Update arrows to show sort direction
 }
@@ -185,6 +221,8 @@ function editBook(id, key, newValue) {
 
     if (key === "genre") updateGenreFilter();        // Refresh dropdown if genre changed
     if (key === "title" || key === "author") rebuildSecondaryMaps(); // Rebuild title/author maps
+    
+    saveToLocalStorage(); // Persist changes and automatically save edits
 }
 
 // ================================
@@ -363,3 +401,6 @@ function clearInputs() {
     document.getElementById("genre").value = "";
     document.getElementById("availability").value = "In Stock"; 
 }
+
+// Load saved books when page loads
+window.addEventListener('DOMContentLoaded', loadFromLocalStorage); //Ensures the function runs after the HTML is ready. Any books previously saved in LocalStorage will populate your linked list, maps, and table automatically. 

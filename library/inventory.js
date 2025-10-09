@@ -13,6 +13,7 @@
 // - Supports fast lookup using Maps
 // - Inline editable table cells
 // - Integrate hash map system
+// - Implement a Custom Sorting Algorithm
 
 // ================================
 // ----- Book Class -----
@@ -92,19 +93,29 @@ class BookList {
 // bookMap: fast lookup by ID
 // bookMapByTitle / bookMapByAuthor: fast lookup for search
 // ================================
-
-// ----- Initialize Data Structures -----
-// The linked list keeps book order (for easy iteration and removal)
-// Hash maps (using JS Map) allow instant lookups by ID, Title, and Author
 const bookList = new BookList();
 
 // Hash Maps for quick access
-const bookMap = new Map();          // Lookup by Book ID
-const bookMapByTitle = new Map();   // Lookup by Book Title
-const bookMapByAuthor = new Map();  // Lookup by Author Name
+const bookMap = new Map();          
+const bookMapByTitle = new Map();   
+const bookMapByAuthor = new Map();  
 
+// Track the books currently displayed (filtered/sorted)
+let currentDisplayList = bookList.listBooks();
+
+// ================================
+// ----- Current Sort Tracker -----
+// Stores current sorted column and direction
+// ================================
+let currentSort = {
+    column: '',
+    ascending: true
+};
+
+// ================================
 // ----- Hash Map Utility Functions -----
 // These keep all hash maps updated whenever books are added or changed
+// ================================
 
 // Adds book to the title and author maps
 function addToSecondaryMaps(book) {
@@ -123,22 +134,6 @@ function rebuildSecondaryMaps() {
     bookMapByAuthor.clear();
     bookList.listBooks().forEach(book => addToSecondaryMaps(book));
 }
-
-// Explanation:
-// - bookMap.get("123") → retrieves a book instantly by ID
-// - bookMapByTitle.get("Dune") → returns an array of all books titled "Dune"
-// - bookMapByAuthor.get("Frank Herbert") → returns an array of all books by that author
-// - Every time you add, edit, or remove a book, these maps stay in sync.
-// - That means you can instantly search later using bookMap.get(id) or bookMapByTitle.get(title).
-
-// ================================
-// ----- Current Sort Tracker -----
-// Stores current sorted column and direction
-// ================================
-let currentSort = {
-    column: '',
-    ascending: true
-};
 
 // ================================
 // ----- Add Book Manually -----
@@ -161,12 +156,11 @@ function addBook() {
         return;
     }
 
-    //This ensures every time you add a book, all three maps are updated automatically.
+    // Add to main structures
     const book = new Book(id, title, author, genre, availability);
-    bookList.add(book);              // Add to linked list
-    bookMap.set(id, book);           // Add to hash map for ID
-    addToSecondaryMaps(book);        // Add to title/author maps
-
+    bookList.add(book);
+    bookMap.set(id, book);
+    addToSecondaryMaps(book);
 
     updateGenreFilter();     
     displayBooks();          
@@ -174,23 +168,13 @@ function addBook() {
 }
 
 // ================================
-// ----- Add to Secondary Maps -----
-// Keeps title/author hash maps up to date
-// Supports multiple books with same title/author
-// ================================
-function addToSecondaryMaps(book) {
-    if (!bookMapByTitle.has(book.title)) bookMapByTitle.set(book.title, []);
-    bookMapByTitle.get(book.title).push(book);
-
-    if (!bookMapByAuthor.has(book.author)) bookMapByAuthor.set(book.author, []);
-    bookMapByAuthor.get(book.author).push(book);
-}
-
-// ================================
 // ----- Display Books -----
 // Populates HTML table with current book list
+// Stores currently displayed list in `currentDisplayList`
 // ================================
 function displayBooks(books = bookList.listBooks()) {
+    currentDisplayList = books;
+
     const tbody = document.getElementById("booksTableBody");
     tbody.innerHTML = "";
 
@@ -223,16 +207,6 @@ function editBook(id, key, newValue) {
 }
 
 // ================================
-// ----- Rebuild Secondary Maps -----
-// Clears and repopulates title/author maps after edits
-// ================================
-function rebuildSecondaryMaps() {
-    bookMapByTitle.clear();
-    bookMapByAuthor.clear();
-    bookList.listBooks().forEach(book => addToSecondaryMaps(book));
-}
-
-// ================================
 // ----- Remove Book -----
 // Confirms removal, deletes from linked list and maps, refreshes UI
 // ================================
@@ -241,12 +215,11 @@ function removeBook(id) {
     if (!confirmed) return;
 
     const removed = bookList.removeById(id); 
-    // Hook maps into removeBook() This ensures everything stays consistent when deleting.
     if (removed) {
-        bookMap.delete(id);        // Remove from ID map
-        rebuildSecondaryMaps();    // Rebuild title/author maps
-        displayBooks();            // Refresh UI
-        updateGenreFilter();       // Update genre dropdown
+        bookMap.delete(id);        
+        rebuildSecondaryMaps();    
+        displayBooks(currentDisplayList);  // Keep current filtered/sorted view
+        updateGenreFilter();       
         alert(`Book ID ${id} removed successfully.`);
     }
 }
@@ -256,16 +229,13 @@ function removeBook(id) {
 // Supports searching by ID, Title, Author, and Genre simultaneously
 // ================================
 function filterBooks() {
-    // ✅ Collect all current input values (case-insensitive)
     const idQuery = document.getElementById("searchId")?.value.trim().toLowerCase() || "";
     const titleQuery = document.getElementById("searchTitle")?.value.trim().toLowerCase() || "";
     const authorQuery = document.getElementById("searchAuthor")?.value.trim().toLowerCase() || "";
     const genreQuery = document.getElementById("genreFilter")?.value.trim().toLowerCase() || "";
 
-    // ✅ Get all books currently loaded in memory
     const allBooks = bookList.listBooks();
 
-    // ✅ Filter the array using all active criteria
     const filtered = allBooks.filter(book =>
         (!idQuery || book.id.toLowerCase().includes(idQuery)) &&
         (!titleQuery || book.title.toLowerCase().includes(titleQuery)) &&
@@ -273,25 +243,30 @@ function filterBooks() {
         (!genreQuery || book.genre.toLowerCase().includes(genreQuery))
     );
 
-    // ✅ Display only matching books
     displayBooks(filtered);
-    updateSortArrows(); // Ensures your ▲/▼ indicators remain consistent.
+
+    // Re-apply sort without flipping ascending
+    if (currentSort.column) sortBooks(currentSort.column);
 }
-//Add the clearFilters() helper, That links up with the “Clear Filters” button in your HTML.
+
+// ================================
+// ----- Clear Filters -----
+// Resets search inputs and shows full list
+// ================================
 function clearFilters() {
     document.getElementById("searchId").value = "";
     document.getElementById("searchTitle").value = "";
     document.getElementById("searchAuthor").value = "";
     document.getElementById("genreFilter").value = "";
-    displayBooks(); // Reset table to full list
+    displayBooks(bookList.listBooks());
 }
 
 // ================================
 // ----- Sort Books -----
-// Sorts the linked list array by column, toggles ascending/descending
+// Sorts the currently displayed list by a column
 // ================================
 function sortBooks(key) {
-    const booksArray = bookList.listBooks(); 
+    const booksArray = [...currentDisplayList];
 
     if (currentSort.column === key) {
         currentSort.ascending = !currentSort.ascending;
@@ -301,9 +276,8 @@ function sortBooks(key) {
     }
 
     booksArray.sort((a, b) => {
-        const valA = a[key] || '';
-        const valB = b[key] || '';
-        if (!isNaN(valA) && !isNaN(valB)) return currentSort.ascending ? valA - valB : valB - valA;
+        const valA = a[key]?.toString().toLowerCase() || "";
+        const valB = b[key]?.toString().toLowerCase() || "";
         return currentSort.ascending ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
@@ -325,7 +299,6 @@ function updateSortArrows() {
             : '';
     });
 }
-
 
 // ================================
 // ----- Update Genre Dropdown -----
@@ -356,41 +329,22 @@ function loadCSV() {
     reader.onload = function(e) {
         parseCSV(e.target.result);
         updateGenreFilter();
-        displayBooks();
+        displayBooks(bookList.listBooks());
     };
     reader.readAsText(file); 
 }
 
-// ============================
-// Function: parseCSV()
-// ----------------------------
-// Reads the CSV text, skips the header,
-// creates Book objects, and adds them
-// to both bookList and bookMap.
-// ============================
 function parseCSV(csvText) {
-    const lines = csvText.split("\n"); // Split file into lines
-
-    // ✅ Start reading from the 2nd line (skip header)
+    const lines = csvText.split("\n");
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (!line) continue; // Skip blank lines
-
-        // ✅ Extract data fields safely
-        const [id, title, author = "", genre = "", availability = ""] =
-            line.split(",").map(c => c.trim());
-
-        // ✅ Skip invalid or duplicate IDs
+        if (!line) continue;
+        const [id, title, author = "", genre = "", availability = ""] = line.split(",").map(c => c.trim());
         if (!id || !title || bookMap.has(id)) continue;
 
-        // ✅ Create the Book now that we have data
         const book = new Book(id, title, author, genre, availability);
-
-        // ✅ Add to your main structures
-        bookList.add(book);      // If bookList is a custom collection class
-        bookMap.set(id, book);   // Quick ID lookup
-
-        // ✅ Update any secondary lookup maps if you use them
+        bookList.add(book);
+        bookMap.set(id, book);
         addToSecondaryMaps(book);
     }
 }

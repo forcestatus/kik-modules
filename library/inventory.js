@@ -252,28 +252,38 @@ function removeBook(id) {
 }
 
 // ================================
-// ----- Search Functions -----
-// Search by ID, Title, or Author
+// ----- Unified Search Function -----
+// Supports searching by ID, Title, Author, and Genre simultaneously
 // ================================
-function searchBookById() {
-    const searchId = document.getElementById("searchId").value.trim();
-    const book = bookMap.get(searchId);
-    const result = document.getElementById("searchResult");
-    result.textContent = book
-        ? `ID: ${book.id}, Title: ${book.title}, Author: ${book.author}, Genre: ${book.genre}, Availability: ${book.availability}`
-        : "Book not found.";
-}
+function filterBooks() {
+    // ✅ Collect all current input values (case-insensitive)
+    const idQuery = document.getElementById("searchId")?.value.trim().toLowerCase() || "";
+    const titleQuery = document.getElementById("searchTitle")?.value.trim().toLowerCase() || "";
+    const authorQuery = document.getElementById("searchAuthor")?.value.trim().toLowerCase() || "";
+    const genreQuery = document.getElementById("genreFilter")?.value.trim().toLowerCase() || "";
 
-function searchBookByTitle() {
-    const searchTitle = document.getElementById("searchTitle").value.trim();
-    const books = bookMapByTitle.get(searchTitle) || [];
-    displayBooks(books);
-}
+    // ✅ Get all books currently loaded in memory
+    const allBooks = bookList.listBooks();
 
-function searchBookByAuthor() {
-    const searchAuthor = document.getElementById("searchAuthor").value.trim();
-    const books = bookMapByAuthor.get(searchAuthor) || [];
-    displayBooks(books);
+    // ✅ Filter the array using all active criteria
+    const filtered = allBooks.filter(book =>
+        (!idQuery || book.id.toLowerCase().includes(idQuery)) &&
+        (!titleQuery || book.title.toLowerCase().includes(titleQuery)) &&
+        (!authorQuery || book.author.toLowerCase().includes(authorQuery)) &&
+        (!genreQuery || book.genre.toLowerCase().includes(genreQuery))
+    );
+
+    // ✅ Display only matching books
+    displayBooks(filtered);
+    updateSortArrows(); // Ensures your ▲/▼ indicators remain consistent.
+}
+//Add the clearFilters() helper, That links up with the “Clear Filters” button in your HTML.
+function clearFilters() {
+    document.getElementById("searchId").value = "";
+    document.getElementById("searchTitle").value = "";
+    document.getElementById("searchAuthor").value = "";
+    document.getElementById("genreFilter").value = "";
+    displayBooks(); // Reset table to full list
 }
 
 // ================================
@@ -316,16 +326,6 @@ function updateSortArrows() {
     });
 }
 
-// ================================
-// ----- Filter by Genre -----
-// Filters the book table based on selected genre
-// ================================
-function filterByGenre() {
-    const genre = document.getElementById("genreFilter").value;
-    const allBooks = bookList.listBooks();
-    const filtered = genre ? allBooks.filter(b => b.genre === genre) : allBooks;
-    displayBooks(filtered);
-}
 
 // ================================
 // ----- Update Genre Dropdown -----
@@ -371,8 +371,6 @@ function loadCSV() {
 function parseCSV(csvText) {
     const lines = csvText.split("\n"); // Split file into lines
 
-    // const book = new Book(id, title, author, genre, availability);
-
     // ✅ Start reading from the 2nd line (skip header)
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -396,27 +394,6 @@ function parseCSV(csvText) {
         addToSecondaryMaps(book);
     }
 }
-
-
-// ----- Quick Search Examples -----
-// These will become interactive buttons in a later stage
-
-function searchBookById() {
-    const searchId = document.getElementById("searchId").value.trim();
-    const book = bookMap.get(searchId);
-    const result = document.getElementById("searchResult");
-
-    result.textContent = book
-        ? `Found: ${book.title} by ${book.author} (${book.genre})`
-        : "Book not found.";
-}
-
-function searchBookByTitle() {
-    const title = prompt("Enter title:");
-    const books = bookMapByTitle.get(title) || [];
-    alert(books.length ? `Found ${books.length} match(es).` : "No matches.");
-}
-
 
 // ================================
 // ----- Clear Form Inputs -----

@@ -44,15 +44,23 @@
         <h3>Search Books</h3>
         <!-- Search by ID -->
         <input type="text" id="searchId" placeholder="Search by Book ID">
-        <button onclick="searchBookById()">Search</button>
-        <!-- Optional search by Title -->
+        <button onclick="filterBooks()">Search</button>
+
+        <!-- Search by Title -->
         <input type="text" id="searchTitle" placeholder="Search by Title">
-        <button onclick="searchBookByTitle()">Search</button>
-        <!-- Optional search by Author -->
+        <button onclick="filterBooks()">Search</button>
+
+        <!-- Search by Author -->
         <input type="text" id="searchAuthor" placeholder="Search by Author">
-        <button onclick="searchBookByAuthor()">Search</button>
-        <p id="searchResult"></p>
-        <!-- Explanation: Displays search results or table filtered by criteria -->
+        <button onclick="filterBooks()">Search</button>
+
+        <!-- Genre filter integrated here -->
+        <select id="genreFilter" onchange="filterBooks()">
+            <option value="">All Genres</option>
+        </select>
+
+        <!-- Clear filters -->
+        <button onclick="clearFilters()">Clear Filters</button>
     </div>
 
     <!-- ========== Manual Book Entry ========== -->
@@ -68,15 +76,6 @@
         </select>
         <button onclick="addBook()">Add Book</button>
         <!-- Explanation: Adds a single book manually to the list -->
-    </div>
-
-    <!-- ========== Filter Section ========== -->
-    <div>
-        <h3>Filter by Genre</h3>
-        <select id="genreFilter" onchange="filterByGenre()">
-            <option value="">All Genres</option>
-        </select>
-        <!-- Explanation: Filters displayed table based on selected genre -->
     </div>
 
     <!-- ========== Books Table Section ========== -->

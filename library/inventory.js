@@ -51,11 +51,11 @@ class BookList {
     add(book) {
         const node = new Node(book);
         if (!this.head) {          
-            this.head = this.tail = node; // First node
+            this.head = this.tail = node; // First node in the list
         } else {                   
-            this.tail.next = node;
-            node.prev = this.tail;
-            this.tail = node; // Update tail pointer
+            this.tail.next = node;  // Link current tail to new node
+            node.prev = this.tail;  // Link new node back to current tail
+            this.tail = node;       // Update tail pointer to new node
         }
     }
 
@@ -66,8 +66,8 @@ class BookList {
             if (current.book.id === id) {
                 if (current.prev) current.prev.next = current.next;
                 if (current.next) current.next.prev = current.prev;
-                if (current === this.head) this.head = current.next; // Update head if needed
-                if (current === this.tail) this.tail = current.prev; // Update tail if needed
+                if (current === this.head) this.head = current.next; // Update head if removed node was head
+                if (current === this.tail) this.tail = current.prev; // Update tail if removed node was tail
                 return true; // Book removed
             }
             current = current.next;
@@ -81,7 +81,7 @@ class BookList {
         let current = this.head;
         while (current) {
             books.push(current.book);
-            current = current.next;
+            current = current.next; // Move to next node
         }
         return books;
     }
@@ -104,7 +104,7 @@ let currentDisplayList = []; // Stores currently displayed books
 function addToSecondaryMaps(book) {
     // For Title: allow multiple books with same title
     if (!bookMapByTitle.has(book.title)) bookMapByTitle.set(book.title, []);
-    bookMapByTitle.get(book.title).push(book);
+    bookMapByTitle.get(book.title).push(book); // Push book into array at this title
 
     // For Author: allow multiple books by same author
     if (!bookMapByAuthor.has(book.author)) bookMapByAuthor.set(book.author, []);
@@ -179,11 +179,12 @@ function displayBooks(books = bookList.listBooks()) {
 // Updates book object and secondary maps if needed
 // ================================
 function editBook(id, key, newValue) {
-    const book = bookMap.get(id);
+    const book = bookMap.get(id); // Get book from Map by ID (fast lookup)
     if (!book) return;
-    book[key] = newValue.trim();
-    if (key === "genre") updateGenreFilter();
-    if (key === "title" || key === "author") rebuildSecondaryMaps();
+    book[key] = newValue.trim(); // Update the key dynamically (title, author, etc.)
+
+    if (key === "genre") updateGenreFilter();        // Refresh dropdown if genre changed
+    if (key === "title" || key === "author") rebuildSecondaryMaps(); // Rebuild title/author maps
 }
 
 // ================================
@@ -208,6 +209,7 @@ function removeBook(id) {
 // Filters by ID, Title, Author, and Genre simultaneously
 // ================================
 function filterBooks() {
+    // Optional chaining ?. prevents errors if element doesn't exist
     const idQuery = document.getElementById("searchId")?.value.trim().toLowerCase() || "";
     const titleQuery = document.getElementById("searchTitle")?.value.trim().toLowerCase() || "";
     const authorQuery = document.getElementById("searchAuthor")?.value.trim().toLowerCase() || "";
@@ -215,14 +217,13 @@ function filterBooks() {
 
     const allBooks = bookList.listBooks();
     const filtered = allBooks.filter(book =>
-        (!idQuery || book.id.toLowerCase().includes(idQuery)) &&
+        (!idQuery || book.id.toLowerCase().includes(idQuery)) &&  // Includes for partial match
         (!titleQuery || book.title.toLowerCase().includes(titleQuery)) &&
         (!authorQuery || book.author.toLowerCase().includes(authorQuery)) &&
         (!genreQuery || book.genre.toLowerCase().includes(genreQuery))
     );
 
     displayBooks(filtered);
-
     if (currentSort.column) sortBooks(currentSort.column, filtered); // Keep sort on filtered list
 }
 
@@ -255,10 +256,11 @@ function sortBooks(key, booksArray = null) {
     do {
         swapped = false;
         for (let i = 0; i < booksArray.length - 1; i++) {
-            const aVal = booksArray[i][key]?.toString().toLowerCase() || "";
+            const aVal = booksArray[i][key]?.toString().toLowerCase() || ""; // Optional chaining + default empty string
             const bVal = booksArray[i + 1][key]?.toString().toLowerCase() || "";
+            // Ternary like logic for swapping based on ascending/descending
             if ((currentSort.ascending && aVal > bVal) || (!currentSort.ascending && aVal < bVal)) {
-                [booksArray[i], booksArray[i + 1]] = [booksArray[i + 1], booksArray[i]]; // Swap
+                [booksArray[i], booksArray[i + 1]] = [booksArray[i + 1], booksArray[i]]; // Array destructuring swap
                 swapped = true;
             }
         }
@@ -274,10 +276,11 @@ function sortBooks(key, booksArray = null) {
 function updateSortArrows() {
     const headers = document.querySelectorAll('#booksTable th');
     headers.forEach(th => {
-        const arrowSpan = th.querySelector('.arrow');
+        const arrowSpan = th.querySelector('.arrow'); // Get arrow span inside <th>
         if (!arrowSpan) return;
-        const col = th.dataset.column;
+        const col = th.dataset.column; // Data attribute tells which column
         arrowSpan.textContent = (col === currentSort.column) ? (currentSort.ascending ? '▲' : '▼') : '';
+        // Nested ternary explained: if this column is the current sort, show arrow up or down, else show empty
     });
 }
 
@@ -287,6 +290,7 @@ function updateSortArrows() {
 // ================================
 function updateGenreFilter() {
     const genreSelect = document.getElementById("genreFilter");
+    // Use Set to get unique genres, filter out empty strings
     const genres = [...new Set(bookList.listBooks().map(b => b.genre).filter(g => g))];
     genreSelect.innerHTML = '<option value="">All Genres</option>';
     genres.forEach(g => {
@@ -317,13 +321,14 @@ function loadCSV() {
 
 // Parse CSV and add books
 function parseCSV(csvText) {
-    const lines = csvText.split("\n");
+    const lines = csvText.split("\n"); // Split file into lines
     for (let i = 1; i < lines.length; i++) { // Skip header line
         const line = lines[i].trim();
         if (!line) continue;
 
+        // Destructuring with default values for missing columns
         const [id, title, author = "", genre = "", availability = ""] = line.split(",").map(c => c.trim());
-        if (!id || !title || bookMap.has(id)) continue;
+        if (!id || !title || bookMap.has(id)) continue; // Skip invalid or duplicate
 
         const book = new Book(id, title, author, genre, availability);
         bookList.add(book);
@@ -338,13 +343,13 @@ function saveCSV() {
     let csvContent = "ID,Title,Author,Genre,Availability\n";
     books.forEach(b => csvContent += `${b.id},${b.title},${b.author},${b.genre},${b.availability}\n`);
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: 'text/csv' }); // Blob object for file
+    const url = URL.createObjectURL(blob); // Create download link
     const a = document.createElement("a");
     a.href = url;
     a.download = "books_inventory.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    a.click(); // Trigger download
+    URL.revokeObjectURL(url); // Clean up memory
 }
 
 // ================================

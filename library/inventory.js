@@ -15,6 +15,7 @@
 // - Integrate hash map system
 // - Implement a Custom Sorting Algorithm
 // - Save Books to LocalStorage, add automatic saving on edits/removals 
+// - Open Library button intergration
 
 // ================================
 // ----- Book Class -----
@@ -221,7 +222,7 @@ function editBook(id, key, newValue) {
 
     if (key === "genre") updateGenreFilter();        // Refresh dropdown if genre changed
     if (key === "title" || key === "author") rebuildSecondaryMaps(); // Rebuild title/author maps
-    
+
     saveToLocalStorage(); // Persist changes and automatically save edits
 }
 
@@ -388,6 +389,50 @@ function saveCSV() {
     a.download = "books_inventory.csv";
     a.click(); // Trigger download
     URL.revokeObjectURL(url); // Clean up memory
+}
+
+// ================================
+// ----- Load Open Library Books -----
+// loads in the top 10 books and add them to table 
+// ================================
+
+async function fetchBooksFromOpenLibrary() {
+    const query = document.getElementById("openLibrarySearch").value.trim();
+    if (!query) {
+        alert("Please enter a search term!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=10`);
+        const data = await response.json();
+
+        // Clear previous search results (optional)
+        // currentDisplayList = [];
+        
+        data.docs.forEach(doc => {
+            const id = doc.key.replace("/works/", ""); // use unique work key as ID
+            const title = doc.title || "Unknown Title";
+            const author = doc.author_name ? doc.author_name.join(", ") : "Unknown Author";
+            const genre = doc.subject ? doc.subject[0] : "General";
+            const availability = "In Stock";
+
+            // Avoid duplicates by ID
+            if (bookMap.has(id)) return;
+
+            const book = new Book(id, title, author, genre, availability);
+            bookList.add(book);
+            bookMap.set(id, book);
+            addToSecondaryMaps(book);
+        });
+
+        updateGenreFilter();
+        displayBooks(bookList.listBooks());
+        saveToLocalStorage(); // Optional: persist these books automatically
+    } catch (err) {
+        console.error("Error fetching from Open Library:", err);
+        alert("Failed to fetch books. Check console for details.");
+    }
 }
 
 // ================================

@@ -2,8 +2,21 @@
 // inventory.js - Full Interactive with Advanced Search/Sort
 // ================================
 
+// This script implements a full bookstore inventory system.
+// Features include:
+// - Add, edit, remove books
+// - Search by ID, Title, Author
+// - Sort by any column with ascending/descending toggle
+// - Filter by Genre
+// - Load from CSV and save to CSV
+// - Maintains order via doubly linked list
+// - Supports fast lookup using Maps
+// - Inline editable table cells
+
+// ================================
 // ----- Book Class -----
-// Represents a single book object
+// Represents a single book object with ID, Title, Author, Genre, Availability
+// ================================
 class Book {
     constructor(id, title, author, genre, availability) {
         this.id = id;             
@@ -14,24 +27,25 @@ class Book {
     }
 }
 
-// ----- Node & Linked List Classes -----
-// Node stores a book and links to previous/next nodes
+// ================================
+// ----- Node & Doubly Linked List -----
+// Doubly linked list maintains insertion order and allows efficient removal
+// ================================
 class Node {
     constructor(book) {
-        this.book = book;   
-        this.prev = null;   
-        this.next = null;   
+        this.book = book;
+        this.prev = null;
+        this.next = null;
     }
 }
 
-// Doubly linked list to maintain book order
 class BookList {
     constructor() {
         this.head = null;
         this.tail = null;
     }
 
-    // Add book to end of list
+    // Add book to the end of the list
     add(book) {
         const node = new Node(book);
         if (!this.head) {          
@@ -52,14 +66,14 @@ class BookList {
                 if (current.next) current.next.prev = current.prev;
                 if (current === this.head) this.head = current.next;
                 if (current === this.tail) this.tail = current.prev;
-                return true; 
+                return true;
             }
             current = current.next;
         }
-        return false; 
+        return false;
     }
 
-    // Convert linked list to array (needed for display, sort, filter)
+    // Convert linked list to array for easy display/sorting/filtering
     listBooks() {
         const books = [];
         let current = this.head;
@@ -71,14 +85,30 @@ class BookList {
     }
 }
 
-// ----- Initialize storage -----
-// Linked list maintains order, hash maps allow instant lookup
+// ================================
+// ----- Initialize Storage -----
+// bookList: linked list for order
+// bookMap: fast lookup by ID
+// bookMapByTitle / bookMapByAuthor: fast lookup for search
+// ================================
 const bookList = new BookList();
-const bookMap = new Map();          // Lookup by ID
-const bookMapByTitle = new Map();   // Lookup by Title
-const bookMapByAuthor = new Map();  // Lookup by Author
+const bookMap = new Map();
+const bookMapByTitle = new Map();
+const bookMapByAuthor = new Map();
 
+// ================================
+// ----- Current Sort Tracker -----
+// Stores current sorted column and direction
+// ================================
+let currentSort = {
+    column: '',
+    ascending: true
+};
+
+// ================================
 // ----- Add Book Manually -----
+// Reads input fields, validates, adds to list and maps, refreshes UI
+// ================================
 function addBook() {
     const id = document.getElementById("bookId").value.trim();
     const title = document.getElementById("title").value.trim();
@@ -99,16 +129,19 @@ function addBook() {
     const book = new Book(id, title, author, genre, availability);
     bookList.add(book);      
     bookMap.set(id, book);   
-    addToSecondaryMaps(book); // Add to title/author maps
+    addToSecondaryMaps(book); 
 
     updateGenreFilter();     
     displayBooks();          
     clearInputs();           
 }
 
-// ----- Add book to secondary hash maps -----
+// ================================
+// ----- Add to Secondary Maps -----
+// Keeps title/author hash maps up to date
+// Supports multiple books with same title/author
+// ================================
 function addToSecondaryMaps(book) {
-    // Note: For multiple books with same title/author, we store array of books
     if (!bookMapByTitle.has(book.title)) bookMapByTitle.set(book.title, []);
     bookMapByTitle.get(book.title).push(book);
 
@@ -116,53 +149,64 @@ function addToSecondaryMaps(book) {
     bookMapByAuthor.get(book.author).push(book);
 }
 
+// ================================
 // ----- Display Books -----
+// Populates HTML table with current book list
+// ================================
 function displayBooks(books = bookList.listBooks()) {
     const tbody = document.getElementById("booksTableBody");
-    tbody.innerHTML = ""; 
+    tbody.innerHTML = "";
 
     books.forEach(book => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${book.id}</td>
-            <td contenteditable="true" onblur="editBook('${book.id}', 'title', this.textContent)">${book.title}</td>
-            <td contenteditable="true" onblur="editBook('${book.id}', 'author', this.textContent)">${book.author}</td>
-            <td contenteditable="true" onblur="editBook('${book.id}', 'genre', this.textContent)">${book.genre}</td>
-            <td contenteditable="true" onblur="editBook('${book.id}', 'availability', this.textContent)">${book.availability}</td>
+            <td data-column="id">${book.id}</td>
+            <td data-column="title" contenteditable="true" onblur="editBook('${book.id}','title',this.textContent)">${book.title}</td>
+            <td data-column="author" contenteditable="true" onblur="editBook('${book.id}','author',this.textContent)">${book.author}</td>
+            <td data-column="genre" contenteditable="true" onblur="editBook('${book.id}','genre',this.textContent)">${book.genre}</td>
+            <td data-column="availability" contenteditable="true" onblur="editBook('${book.id}','availability',this.textContent)">${book.availability}</td>
             <td><button onclick="removeBook('${book.id}')">Remove</button></td>
         `;
         tbody.appendChild(tr);
     });
+
+    updateSortArrows();
 }
 
+// ================================
 // ----- Edit Book Inline -----
+// Updates book object and rebuilds secondary maps if needed
+// ================================
 function editBook(id, key, newValue) {
     const book = bookMap.get(id);
     if (!book) return; 
-    book[key] = newValue.trim(); 
-    if (key === "genre") updateGenreFilter(); 
-    // If title or author changes, update secondary maps:
-    if (key === "title" || key === "author") rebuildSecondaryMaps(); 
+    book[key] = newValue.trim();
+    if (key === "genre") updateGenreFilter();
+    if (key === "title" || key === "author") rebuildSecondaryMaps();
 }
 
+// ================================
 // ----- Rebuild Secondary Maps -----
-// Called after title/author edits to ensure consistency
+// Clears and repopulates title/author maps after edits
+// ================================
 function rebuildSecondaryMaps() {
     bookMapByTitle.clear();
     bookMapByAuthor.clear();
     bookList.listBooks().forEach(book => addToSecondaryMaps(book));
 }
 
+// ================================
 // ----- Remove Book -----
+// Confirms removal, deletes from linked list and maps, refreshes UI
+// ================================
 function removeBook(id) {
     const confirmed = confirm(`Are you sure you want to remove Book ID: ${id}?`);
     if (!confirmed) return;
 
     const removed = bookList.removeById(id); 
     if (removed) {
-        const book = bookMap.get(id);
         bookMap.delete(id); 
-        rebuildSecondaryMaps(); // Keep secondary maps updated
+        rebuildSecondaryMaps(); 
         displayBooks();     
         updateGenreFilter(); 
         alert(`Book ID ${id} removed successfully.`);
@@ -171,62 +215,75 @@ function removeBook(id) {
     }
 }
 
-// ----- Search by ID -----
+// ================================
+// ----- Search Functions -----
+// Search by ID, Title, or Author
+// ================================
 function searchBookById() {
     const searchId = document.getElementById("searchId").value.trim();
     const book = bookMap.get(searchId);
-
     const result = document.getElementById("searchResult");
     result.textContent = book
         ? `ID: ${book.id}, Title: ${book.title}, Author: ${book.author}, Genre: ${book.genre}, Availability: ${book.availability}`
         : "Book not found.";
 }
 
-// ----- Search by Title -----
 function searchBookByTitle() {
     const searchTitle = document.getElementById("searchTitle").value.trim();
     const books = bookMapByTitle.get(searchTitle) || [];
     displayBooks(books);
 }
 
-// ----- Search by Author -----
 function searchBookByAuthor() {
     const searchAuthor = document.getElementById("searchAuthor").value.trim();
     const books = bookMapByAuthor.get(searchAuthor) || [];
     displayBooks(books);
 }
 
-// ----- Sort Books (Built-in) -----
-let sortAscending = true;
+// ================================
+// ----- Sort Books -----
+// Sorts the linked list array by column, toggles ascending/descending
+// ================================
 function sortBooks(key) {
     const booksArray = bookList.listBooks(); 
 
+    if (currentSort.column === key) {
+        currentSort.ascending = !currentSort.ascending;
+    } else {
+        currentSort.column = key;
+        currentSort.ascending = true;
+    }
+
     booksArray.sort((a, b) => {
-        if (a[key] < b[key]) return sortAscending ? -1 : 1;
-        if (a[key] > b[key]) return sortAscending ? 1 : -1;
-        return 0;
+        const valA = a[key] || '';
+        const valB = b[key] || '';
+        if (!isNaN(valA) && !isNaN(valB)) return currentSort.ascending ? valA - valB : valB - valA;
+        return currentSort.ascending ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
-    sortAscending = !sortAscending; 
     displayBooks(booksArray);
 }
 
-// ----- Custom Bubble Sort Example -----
-// Demonstrates manual sorting without using JS built-in .sort()
-function bubbleSortBooks(key) {
-    const arr = bookList.listBooks();
-    let n = arr.length;
-    for (let i = 0; i < n-1; i++) {
-        for (let j = 0; j < n-i-1; j++) {
-            if (arr[j][key] > arr[j+1][key]) {
-                [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; // Swap
-            }
-        }
-    }
-    displayBooks(arr);
+// ================================
+// ----- Update Sort Arrows -----
+// Displays ▲ / ▼ in <th> for sorted column
+// ================================
+function updateSortArrows() {
+    const headers = document.querySelectorAll('#booksTable th');
+    headers.forEach(th => {
+        const arrowSpan = th.querySelector('.arrow');
+        if (!arrowSpan) return;
+        const col = th.dataset.column;
+        arrowSpan.textContent = (col === currentSort.column)
+            ? (currentSort.ascending ? '▲' : '▼')
+            : '';
+    });
 }
 
+// ================================
 // ----- Filter by Genre -----
+// Filters the book table based on selected genre
+// ================================
 function filterByGenre() {
     const genre = document.getElementById("genreFilter").value;
     const allBooks = bookList.listBooks();
@@ -234,10 +291,13 @@ function filterByGenre() {
     displayBooks(filtered);
 }
 
+// ================================
 // ----- Update Genre Dropdown -----
+// Populates the genre <select> dynamically based on current books
+// ================================
 function updateGenreFilter() {
     const genreSelect = document.getElementById("genreFilter");
-    const genres = [...new Set(bookList.listBooks().map(b => b.genre).filter(g => g))]; 
+    const genres = [...new Set(bookList.listBooks().map(b => b.genre).filter(g => g))];
     genreSelect.innerHTML = '<option value="">All Genres</option>';
     genres.forEach(g => {
         const opt = document.createElement("option");
@@ -247,7 +307,10 @@ function updateGenreFilter() {
     });
 }
 
-// ----- CSV Loading -----
+// ================================
+// ----- CSV Functions -----
+// Load books from CSV file and parse into linked list and maps
+// ================================
 function loadCSV() {
     const fileInput = document.getElementById("csvFile");
     const file = fileInput.files[0];
@@ -255,15 +318,13 @@ function loadCSV() {
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        const text = e.target.result;
-        parseCSV(text);
+        parseCSV(e.target.result);
         updateGenreFilter();
         displayBooks();
     };
     reader.readAsText(file); 
 }
 
-// ----- Parse CSV Text -----
 function parseCSV(csvText) {
     const lines = csvText.split("\n");
     for (let i = 1; i < lines.length; i++) { 
@@ -274,11 +335,14 @@ function parseCSV(csvText) {
         const book = new Book(id, title, author, genre, availability);
         bookList.add(book);
         bookMap.set(id, book);
-        addToSecondaryMaps(book); // Keep title/author maps updated
+        addToSecondaryMaps(book);
     }
 }
 
+// ================================
 // ----- Clear Form Inputs -----
+// Resets all input fields to default
+// ================================
 function clearInputs() {
     document.getElementById("bookId").value = "";
     document.getElementById("title").value = "";
@@ -287,28 +351,22 @@ function clearInputs() {
     document.getElementById("availability").value = "In Stock"; 
 }
 
-// ----- Save Current Books to CSV -----
+// ================================
+// ----- Save to CSV -----
+// Converts current book list to CSV text and triggers download
+// ================================
 function saveCSV() {
-    const books = bookList.listBooks(); 
-    let csvContent = "ID,Title,Author,Genre,Availability\n"; 
-    books.forEach(book => {
-        const row = [
-            book.id,
-            `"${book.title.replace(/"/g, '""')}"`, 
-            `"${book.author.replace(/"/g, '""')}"`,
-            `"${book.genre.replace(/"/g, '""')}"`,
-            `"${book.availability.replace(/"/g, '""')}"`
-        ].join(",");
-        csvContent += row + "\n";
+    const books = bookList.listBooks();
+    let csvContent = "ID,Title,Author,Genre,Availability\n";
+    books.forEach(b => {
+        csvContent += `${b.id},${b.title},${b.author},${b.genre},${b.availability}\n`;
     });
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "books_inventory.csv"; 
-    document.body.appendChild(a);
+    a.download = "books_inventory.csv";
     a.click();
-    document.body.removeChild(a); 
-    URL.revokeObjectURL(url); 
+    URL.revokeObjectURL(url);
 }

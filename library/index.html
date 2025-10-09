@@ -3,36 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <title>Online Bookstore Inventory</title>
-    <link rel="stylesheet" href="style.css">  <!-- if inside a css folder -->
+    <link rel="stylesheet" href="style.css"> <!-- Optional external CSS -->
+
     <style>
+        /* ---------- Global Styles ---------- */
         body { font-family: Arial, sans-serif; margin: 20px; }
         input, select, button { margin: 5px; padding: 5px; }
         table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { cursor: pointer; background-color: #f4f4f4; }
+        
+        /* ---------- Table Header Styles ---------- */
+        th {
+            cursor: pointer;
+            background-color: #333; /* Dark background */
+            color: #fff;            /* White text */
+            position: relative;     /* For arrow positioning */
+        }
+        th:hover { background-color: #555; }
+        th .arrow { margin-left: 5px; font-size: 0.7em; }
+
+        /* ---------- Optional List Styles ---------- */
         #booksUl { list-style-type: none; padding-left: 0; }
     </style>
 </head>
+
 <body>
     <h1>Bookstore Inventory System</h1>
 
-    <!-- CSV File Upload -->
+    <!-- ========== CSV Upload Section ========== -->
     <div>
         <h3>Load Books from CSV</h3>
         <input type="file" id="csvFile" accept=".csv">
         <button onclick="loadCSV()">Load CSV</button>
         <button onclick="saveCSV()">Save Changes to CSV</button>
+        <!-- Explanation: Allows bulk import/export of book inventory -->
     </div>
 
-    <!-- Instant Lookup by ID -->
+    <!-- ========== Search Section ========== -->
     <div>
-        <h3>Search by Book ID</h3>
-        <input type="text" id="searchId" placeholder="Enter Book ID">
+        <h3>Search Books</h3>
+        <!-- Search by ID -->
+        <input type="text" id="searchId" placeholder="Search by Book ID">
         <button onclick="searchBookById()">Search</button>
+        <!-- Optional search by Title -->
+        <input type="text" id="searchTitle" placeholder="Search by Title">
+        <button onclick="searchBookByTitle()">Search</button>
+        <!-- Optional search by Author -->
+        <input type="text" id="searchAuthor" placeholder="Search by Author">
+        <button onclick="searchBookByAuthor()">Search</button>
         <p id="searchResult"></p>
+        <!-- Explanation: Displays search results or table filtered by criteria -->
     </div>
 
-    <!-- Manual Book Entry -->
+    <!-- ========== Manual Book Entry ========== -->
     <div>
         <h3>Add a Book Manually</h3>
         <input type="text" id="bookId" placeholder="Book ID">
@@ -44,39 +67,50 @@
             <option value="Out of Stock">Out of Stock</option>
         </select>
         <button onclick="addBook()">Add Book</button>
+        <!-- Explanation: Adds a single book manually to the list -->
     </div>
 
-    <!-- Filter by Genre -->
+    <!-- ========== Filter Section ========== -->
     <div>
         <h3>Filter by Genre</h3>
         <select id="genreFilter" onchange="filterByGenre()">
             <option value="">All Genres</option>
         </select>
+        <!-- Explanation: Filters displayed table based on selected genre -->
     </div>
 
-    <!-- Books Table -->
+    <!-- ========== Books Table Section ========== -->
     <div>
-        <h3>Books</h3>
-        <table>
+        <h3>Books Inventory</h3>
+        <table id="booksTable">
             <thead>
                 <tr>
-                    <th onclick="sortBooks('id')">ID</th>
-                    <th onclick="sortBooks('title')">Title</th>
-                    <th onclick="sortBooks('author')">Author</th>
-                    <th onclick="sortBooks('genre')">Genre</th>
-                    <th onclick="sortBooks('availability')">Availability</th>
+                    <!-- Clicking header sorts by column -->
+                    <th data-column="id" onclick="sortBooks('id')">ID <span class="arrow"></span></th>
+                    <th data-column="title" onclick="sortBooks('title')">Title <span class="arrow"></span></th>
+                    <th data-column="author" onclick="sortBooks('author')">Author <span class="arrow"></span></th>
+                    <th data-column="genre" onclick="sortBooks('genre')">Genre <span class="arrow"></span></th>
+                    <th data-column="availability" onclick="sortBooks('availability')">Availability <span class="arrow"></span></th>
+                    <th>Remove</th>
                 </tr>
             </thead>
             <tbody id="booksTableBody"></tbody>
         </table>
+        <!-- Explanation: Main table displaying books, supports inline editing -->
     </div>
 
-    <!-- Optional List Display -->
+    <!-- ========== Optional List View ========== -->
     <div id="bookList">
         <h2>Books List (Optional)</h2>
         <ul id="booksUl"></ul>
+        <!-- Explanation: Alternative view of books in list format -->
     </div>
 
+    <!-- ========== Inventory Script ========== -->
     <script src="inventory.js"></script>
+    <script>
+    // table sort functions can just call inventory.js functions
+    // No need to redeclare currentSort
+    </script>S
 </body>
 </html>

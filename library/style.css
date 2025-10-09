@@ -98,3 +98,23 @@ tr:hover {
         margin-bottom: 10px;
     }
 }
+
+/* Table header styling */
+#booksTable thead th {
+    background-color: #2c3e50; /* Dark background for header */
+    color: #ffffff;             /* White text */
+    padding: 8px 12px;          /* Padding for readability */
+    text-align: left;           /* Left align text */
+    border-bottom: 2px solid #34495e; /* Optional underline */
+}
+
+/* Table body styling */
+#booksTable tbody td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Optional: alternate row colors */
+#booksTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}

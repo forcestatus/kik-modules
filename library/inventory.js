@@ -18,6 +18,7 @@
 // - Open Library button intergration
 // - Create a simple Binary Search Tree (BST) to store and search books by title. It won’t replace the list — it will just complement it
 // - Add and run tests, use runTests() in console
+// - Add function that updates Optional list view
 
 // ================================
 // ----- Book Class -----
@@ -271,6 +272,34 @@ function displayBooks(books = bookList.listBooks()) {
 
 
     updateSortArrows(); // Update arrows to show sort direction
+    displayBookList(books); // Call Display book optional view 
+}
+
+// ================================
+// ----- Optional List view -----
+// Updates updates optional list view
+// ================================
+function displayBookList(books = bookList.listBooks()) {
+    const ul = document.getElementById("booksUl");
+    if (!ul) return;
+    ul.innerHTML = ""; // Clear existing items
+
+    books.forEach(book => {
+        const li = document.createElement("li");
+        li.textContent = `${book.title} by ${book.author} (${book.genre}) - ${book.availability}`;
+        ul.appendChild(li);
+    });
+}
+
+function showBookListPage() {
+    document.getElementById("mainPage").style.display = "none";
+    document.getElementById("bookListPage").style.display = "block";
+    displayBookList(); // Refresh list view
+}
+
+function showMainPage() {
+    document.getElementById("mainPage").style.display = "block";
+    document.getElementById("bookListPage").style.display = "none";
 }
 
 // ================================

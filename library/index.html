@@ -24,101 +24,137 @@
 
         /* ---------- Optional List Styles ---------- */
         #booksUl { list-style-type: none; padding-left: 0; }
+
+        /* ---------- Page Toggle Styles ---------- */
+        #bookListPage { display: none; }
     </style>
 </head>
 
 <body>
-    <h1>Bookstore Inventory System</h1>
+    <!-- ========== MAIN PAGE (Inventory View) ========== -->
+    <div id="mainPage">
+        <h1>Bookstore Inventory System</h1>
 
-    <!-- ========== CSV Upload Section ========== -->
-    <div>
-        <h3>Load Books from CSV</h3>
-        <input type="file" id="csvFile" accept=".csv">
-        <button onclick="loadCSV()">Load CSV</button>
-        <button onclick="saveCSV()">Save Changes to CSV</button>
-        <!-- Explanation: Allows bulk import/export of book inventory -->
+        <!-- ========== CSV Upload Section ========== -->
+        <div>
+            <h3>Load Books from CSV</h3>
+            <input type="file" id="csvFile" accept=".csv">
+            <button onclick="loadCSV()">Load CSV</button>
+            <button onclick="saveCSV()">Save Changes to CSV</button>
+            <!-- Explanation: Allows bulk import/export of book inventory -->
+        </div>
+
+        <!-- ========== Search Section ========== -->
+        <div>
+            <h3>Search Books</h3>
+            <!-- Search by ID -->
+            <input type="text" id="searchId" placeholder="Search by Book ID">
+            <button onclick="filterBooks()">Search</button>
+
+            <!-- Search by Title -->
+            <input type="text" id="searchTitle" placeholder="Search by Title">
+            <button onclick="filterBooks()">Search</button>
+
+            <!-- Search by Author -->
+            <input type="text" id="searchAuthor" placeholder="Search by Author">
+            <button onclick="filterBooks()">Search</button>
+
+            <!-- Genre filter integrated here -->
+            <select id="genreFilter" onchange="filterBooks()">
+                <option value="">All Genres</option>
+            </select>
+
+            <!-- Clear filters -->
+            <button onclick="clearFilters()">Clear Filters</button>
+
+            <!-- Explanation: Multiple input fields allow filtering by any category -->
+        </div>
+
+        <!-- ========== Manual Book Entry ========== -->
+        <div>
+            <h3>Add a Book Manually</h3>
+            <input type="text" id="bookId" placeholder="Book ID">
+            <input type="text" id="title" placeholder="Title">
+            <input type="text" id="author" placeholder="Author">
+            <input type="text" id="genre" placeholder="Genre">
+            <select id="availability">
+                <option value="In Stock">In Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+            </select>
+            <button onclick="addBook()">Add Book</button>
+            <!-- Explanation: Adds a single book manually to the list -->
+        </div>
+
+        <!-- ========== Load from Open Library ========== -->
+        <div>
+            <h3>Add Books from Online Library</h3>
+            <input 
+                type="text" 
+                id="openLibrarySearch" 
+                placeholder="Enter a book title"
+                title="Type a book title here to fetch matching books from Open Library">
+            <button 
+                onclick="fetchBooksFromOpenLibrary()" 
+                title="Click to search Open Library and add books to your table">
+                Fetch Books
+            </button>
+            <!-- Explanation: Integrates external Open Library API for quick book import -->
+        </div>
+
+        <!-- ========== Books Table Section ========== -->
+        <div>
+            <h3>Books Inventory</h3>
+            <table id="booksTable">
+                <thead>
+                    <tr>
+                        <!-- Clicking header sorts by column -->
+                        <th data-column="id" onclick="sortBooks('id')">ID <span class="arrow"></span></th>
+                        <th data-column="title" onclick="sortBooks('title')">Title <span class="arrow"></span></th>
+                        <th data-column="author" onclick="sortBooks('author')">Author <span class="arrow"></span></th>
+                        <th data-column="genre" onclick="sortBooks('genre')">Genre <span class="arrow"></span></th>
+                        <th data-column="availability" onclick="sortBooks('availability')">Availability <span class="arrow"></span></th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody"></tbody>
+            </table>
+            <!-- Explanation: Main table displaying books, supports inline editing and sorting -->
+        </div>
+
+        <!-- ========== Optional List View Button ========== -->
+        <div id="bookList">
+            <h2>Books List (Optional)</h2>
+            <button onclick="showBookListPage()">View Book List</button>
+            <!-- Explanation: Switches to the simplified list view below -->
+        </div>
     </div>
 
-    <!-- ========== Search Section ========== -->
-    <div>
-        <h3>Search Books</h3>
-        <!-- Search by ID -->
-        <input type="text" id="searchId" placeholder="Search by Book ID">
-        <button onclick="filterBooks()">Search</button>
-
-        <!-- Search by Title -->
-        <input type="text" id="searchTitle" placeholder="Search by Title">
-        <button onclick="filterBooks()">Search</button>
-
-        <!-- Search by Author -->
-        <input type="text" id="searchAuthor" placeholder="Search by Author">
-        <button onclick="filterBooks()">Search</button>
-
-        <!-- Genre filter integrated here -->
-        <select id="genreFilter" onchange="filterBooks()">
-            <option value="">All Genres</option>
-        </select>
-
-        <!-- Clear filters -->
-        <button onclick="clearFilters()">Clear Filters</button>
-    </div>
-
-    <!-- ========== Manual Book Entry ========== -->
-    <div>
-        <h3>Add a Book Manually</h3>
-        <input type="text" id="bookId" placeholder="Book ID">
-        <input type="text" id="title" placeholder="Title">
-        <input type="text" id="author" placeholder="Author">
-        <input type="text" id="genre" placeholder="Genre">
-        <select id="availability">
-            <option value="In Stock">In Stock</option>
-            <option value="Out of Stock">Out of Stock</option>
-        </select>
-        <button onclick="addBook()">Add Book</button>
-        <!-- Explanation: Adds a single book manually to the list -->
-    </div>
-
-    <!-- ========== Load from Open Library ========== -->
-    <div>
-        <h3>Add Books from Online Library</h3>
-        <input type="text" id="openLibrarySearch" placeholder="Enter a book title"
-        title="Type a book title here to fetch matching books from Open Library">
-
-        <button onclick="fetchBooksFromOpenLibrary()" title="Click to search Open Library and add books to your table">Fetch Books</button>
-    </div>
-
-    <!-- ========== Books Table Section ========== -->
-    <div>
-        <h3>Books Inventory</h3>
-        <table id="booksTable">
-            <thead>
-                <tr>
-                    <!-- Clicking header sorts by column -->
-                    <th data-column="id" onclick="sortBooks('id')">ID <span class="arrow"></span></th>
-                    <th data-column="title" onclick="sortBooks('title')">Title <span class="arrow"></span></th>
-                    <th data-column="author" onclick="sortBooks('author')">Author <span class="arrow"></span></th>
-                    <th data-column="genre" onclick="sortBooks('genre')">Genre <span class="arrow"></span></th>
-                    <th data-column="availability" onclick="sortBooks('availability')">Availability <span class="arrow"></span></th>
-                    <th>Remove</th>
-                </tr>
-            </thead>
-            <tbody id="booksTableBody"></tbody>
-        </table>
-        <!-- Explanation: Main table displaying books, supports inline editing -->
-    </div>
-
-    <!-- ========== Optional List View ========== -->
-    <div id="bookList">
-        <h2>Books List (Optional)</h2>
+    <!-- ========== SECOND PAGE (Optional Book List View) ========== -->
+    <section id="bookListPage">
+        <h2>Book List View</h2>
+        <button onclick="showMainPage()">← Back to Inventory</button>
         <ul id="booksUl"></ul>
-        <!-- Explanation: Alternative view of books in list format -->
-    </div>
+        <!-- Explanation: Alternate view of books in simple list format for minimal overview -->
+    </section>
 
     <!-- ========== Inventory Script ========== -->
     <script src="inventory.js"></script>
     <script>
-    // table sort functions can just call inventory.js functions
-    // No need to redeclare currentSort
+        // ---------- Page Toggle Logic ----------
+        function showBookListPage() {
+            document.getElementById("mainPage").style.display = "none";
+            document.getElementById("bookListPage").style.display = "block";
+            displayBookList(); // Explanation: Updates list view with current book data
+        }
+
+        function showMainPage() {
+            document.getElementById("mainPage").style.display = "block";
+            document.getElementById("bookListPage").style.display = "none";
+        }
+
+        // Explanation: These two functions simulate navigation between "pages"
+        // without actually loading a new HTML file.
+        // displayBookList() is defined in inventory.js and populates the <ul> list dynamically.
     </script>
 </body>
 </html>

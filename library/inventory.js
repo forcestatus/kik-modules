@@ -17,6 +17,7 @@
 // - Save Books to LocalStorage, add automatic saving on edits/removals 
 // - Open Library button intergration
 // - Create a simple Binary Search Tree (BST) to store and search books by title. It won’t replace the list — it will just complement it
+// - Add and run tests, use runTests() in console
 
 // ================================
 // ----- Book Class -----
@@ -495,6 +496,35 @@ async function fetchBooksFromOpenLibrary() {
         alert("Failed to fetch books. Check console for details.");
     }
 }
+
+// ================================
+// ----- Simple Data Structure Tests -----
+// ================================
+function runTests() {
+    console.log("=== Testing Doubly Linked List ===");
+    const bookA = new Book("1", "Alice in Wonderland", "Lewis Carroll", "Fantasy", "In Stock");
+    const bookB = new Book("2", "Moby Dick", "Herman Melville", "Adventure", "Out of Stock");
+    const bookC = new Book("3", "Dune", "Frank Herbert", "Sci-Fi", "In Stock");
+
+    const list = new BookList();
+    list.add(bookA);
+    list.add(bookB);
+    list.add(bookC);
+    console.log("Books in list:", list.listBooks());
+
+    list.removeById("2");
+    console.log("After removal:", list.listBooks());
+
+    console.log("\n=== Testing Binary Search Tree ===");
+    const tree = new BookTree();
+    tree.insert(bookA);
+    tree.insert(bookB);
+    tree.insert(bookC);
+    console.log("In-order (sorted):", tree.inOrder());
+    console.log("Search for Dune:", tree.search("Dune"));
+}
+
+// use runTests() in console to run test.
 
 // ================================
 // ----- Clear Form Inputs -----

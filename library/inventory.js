@@ -16,6 +16,7 @@
 // - Implement a Custom Sorting Algorithm
 // - Save Books to LocalStorage, add automatic saving on edits/removals 
 // - Open Library button intergration
+// - Create a simple Binary Search Tree (BST) to store and search books by title. It won’t replace the list — it will just complement it
 
 // ================================
 // ----- Book Class -----
@@ -90,8 +91,67 @@ class BookList {
 }
 
 // ================================
+// ----- Binary Search Tree (BST) -----
+// Used for fast searching/sorting by title
+// ================================
+class TreeNode {
+    constructor(book) {
+        this.book = book;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class BookTree {
+    constructor() {
+        this.root = null;
+    }
+
+    // Insert a new book based on title
+    insert(book) {
+        const node = new TreeNode(book);
+        if (!this.root) {
+            this.root = node;
+            return;
+        }
+        let current = this.root;
+        while (true) {
+            if (book.title.toLowerCase() < current.book.title.toLowerCase()) {
+                if (!current.left) { current.left = node; break; }
+                current = current.left;
+            } else {
+                if (!current.right) { current.right = node; break; }
+                current = current.right;
+            }
+        }
+    }
+
+    // Search book by title
+    search(title) {
+        let current = this.root;
+        while (current) {
+            const currentTitle = current.book.title.toLowerCase();
+            if (title.toLowerCase() === currentTitle) return current.book;
+            current = title.toLowerCase() < currentTitle ? current.left : current.right;
+        }
+        return null; // Not found
+    }
+
+    // In-order traversal (sorted order)
+    inOrder(node = this.root, result = []) {
+        if (!node) return result;
+        this.inOrder(node.left, result);
+        result.push(node.book);
+        this.inOrder(node.right, result);
+        return result;
+    }
+}
+
+
+// ================================
 // ----- Initialize Storage -----
 // ================================
+const bookTree = new BookTree();       // BookList (linked list) handles order and iteration
 const bookList = new BookList();       // Linked list keeps order
 const bookMap = new Map();             // Quick lookup by ID
 const bookMapByTitle = new Map();      // Quick lookup by Title
@@ -142,6 +202,7 @@ function addBook() {
     }
 
     const book = new Book(id, title, author, genre, availability);
+    bookTree.insert(book);     // tore and search books by title.
     bookList.add(book);        // Add to linked list
     bookMap.set(id, book);     // Add to ID map
     addToSecondaryMaps(book);  // Add to Title/Author maps

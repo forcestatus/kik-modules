@@ -19,6 +19,7 @@
 // - Create a simple Binary Search Tree (BST) to store and search books by title. It won’t replace the list — it will just complement it
 // - Add and run tests, use runTests() in console
 // - Add function that updates Optional list view
+// - Add script that handles the CSV import using Papa Parse and displays the books neatly on the page 
 
 // ================================
 // ----- Book Class -----
@@ -449,22 +450,17 @@ function loadCSV() {
     reader.readAsText(file); 
 }
 
-// Parse CSV and add books
+// Parse CSV and add books using 3rd party PaperPURSE for formatting
 function parseCSV(csvText) {
-    const lines = csvText.split("\n"); // Split file into lines
-    for (let i = 1; i < lines.length; i++) { // Skip header line
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        // Destructuring with default values for missing columns
-        const [id, title, author = "", genre = "", availability = ""] = line.split(",").map(c => c.trim());
-        if (!id || !title || bookMap.has(id)) continue; // Skip invalid or duplicate
-
-        const book = new Book(id, title, author, genre, availability);
+    const results = Papa.parse(csvText, { header: true });
+    results.data.forEach(row => {
+        const { ID, Title, Author, Genre, Availability } = row;
+        if (!ID || !Title || bookMap.has(ID)) return;
+        const book = new Book(ID, Title, Author, Genre, Availability);
         bookList.add(book);
-        bookMap.set(id, book);
+        bookMap.set(ID, book);
         addToSecondaryMaps(book);
-    }
+    });
 }
 
 // Save current book list to CSV
@@ -481,6 +477,9 @@ function saveCSV() {
     a.click(); // Trigger download
     URL.revokeObjectURL(url); // Clean up memory
 }
+
+
+
 
 // ================================
 // ----- Load Open Library Books -----

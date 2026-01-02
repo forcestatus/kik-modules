@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ingredient Recipe Management System</title>
+  <script src="js/scripts.js" defer></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 50%; margin-bottom: 20px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    button { margin-left: 5px; }
+    .success { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    label { display: block; margin-top: 10px; }
+    #messageBox { margin-top: 10px; }
+  </style>
+</head>
+
+<body onload="initApp()">
+
+  <h1>Ingredient Recipe Management System</h1>
+
+    
+  <!-- Recipe Table -->
+  <h2 id="selectedRecipeTitle">Please select a recipe or add a new one</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Recipe Name</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="recipeTableBody">
+      <!-- Recipes will be populated here -->
+    </tbody>
+  </table>
+
+  <!-- Ingredients List -->
+  <h2>Ingredients</h2>
+  <ul id="ingredientList"></ul>
+
+  <!-- Servings Adjustment -->
+  <label for="servings">Number of Servings:</label>
+  <input type="number" id="servings" min="1" onchange="adjustIngredients()" aria-label="Number of servings">
+  <p id="servingInfo"></p>
+
+  <!-- Add Ingredient Section -->
+  <h2>Add Ingredient</h2>
+  <label for="ingredientName">Ingredient Name:</label>
+  <input type="text" id="ingredientName" aria-label="Ingredient name">
+
+  <label for="ingredientAmount">Amount:</label>
+  <input type="number" id="ingredientAmount" min="0" aria-label="Ingredient amount">
+
+  <label for="ingredientUnit">Unit:</label>
+  <input type="text" id="ingredientUnit" aria-label="Ingredient unit">
+
+  <button type="button" onclick="addIngredient()">Add Ingredient</button>
+
+  <!-- Add / Update Recipe Section -->
+  <h2>Add / Update Recipe</h2>
+  <form onsubmit="return validateForm()">
+    <label for="recipeName">Recipe Name:</label>
+    <input type="text" id="recipeName" required aria-required="true">
+    <button type="submit">Submit Recipe</button>
+  </form>
+
+  <!-- User Feedback -->
+  <div id="messageBox" role="alert" aria-live="polite"></div>
+
+</body>
+</html>
